@@ -20,6 +20,11 @@ namespace GrabScreen
         private bool hotkeyDialogOpen;
         private readonly List<Keys> activeKeys = new List<Keys>(); // 目前成功註冊的快捷鍵
 
+        /// <summary>安裝/移除程式用這個名稱通知「請自己結束」。</summary>
+        public const string ExitEventName = "GrabScreen_Exit_7F3A";
+        private System.Threading.EventWaitHandle exitEvent;
+        private System.Threading.RegisteredWaitHandle exitWait;
+
         public TrayApp()
         {
             settings = Settings.Load();
@@ -50,6 +55,7 @@ namespace GrabScreen
             tray.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) RunLater(() => Capture(ID_REGION), 150); };
 
             RegisterHotkeys(true);
+            ListenForExitRequest();
 
             if (settings.FirstRun)
             {
@@ -61,6 +67,19 @@ namespace GrabScreen
                     Settings.KeysToText(settings.HotkeyRegion) + "：自行框選\n右鍵點星星圖示 →「快捷鍵設定」可以改按鍵。",
                     ToolTipIcon.Info);
             }
+        }
+
+        /// <summary>安裝新版或移除時，安裝程式會發出通知，收到就正常結束（系統匣圖示才會乾淨消失）。</summary>
+        private void ListenForExitRequest()
+        {
+            try
+            {
+                var sync = System.Threading.SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
+                exitEvent = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, ExitEventName);
+                exitWait = System.Threading.ThreadPool.RegisterWaitForSingleObject(exitEvent,
+                    (state, timedOut) => sync.Post(_ => ExitThread(), null), null, -1, true);
+            }
+            catch { }
         }
 
         private void RegisterHotkeys(bool showErrors)
@@ -253,6 +272,8 @@ namespace GrabScreen
         protected override void ExitThreadCore()
         {
             if (toast != null && !toast.IsDisposed) toast.Close();
+            if (exitWait != null) exitWait.Unregister(null);
+            if (exitEvent != null) exitEvent.Dispose();
             tray.Visible = false;
             tray.Dispose();
             hotkeys.Dispose();

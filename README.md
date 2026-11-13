@@ -88,6 +88,31 @@
 
 ---
 
+## 分享給其他人（安裝檔）
+
+把 `release\GrabScreen-Setup-1.0.0.exe`（約 150 KB）傳給對方就好，對方點兩下就能安裝：
+
+- **不用系統管理員權限**，只安裝給對方自己的帳號（裝在 `%LocalAppData%\Programs\GrabScreen`）
+- 會建立開始功能表捷徑，可選擇桌面捷徑、開機自動啟動、裝完立即執行
+- 會出現在 Windows「設定 → 應用程式 → 已安裝的應用程式」，可以正常移除
+- 以後出新版本，直接再執行新的安裝檔就會更新（會先自動關閉舊版，設定會保留）
+- 需要 Windows 10 或 11（內建的 .NET Framework 4.8 就夠，不用另外裝東西）
+
+傳檔時要注意：
+
+- **Gmail 會擋 .exe 附件**（壓縮成 zip 也一樣），請改用 Google 雲端硬碟、LINE、隨身碟傳送
+- 這個安裝檔沒有付費的「程式碼簽章」，對方第一次執行時 Windows 可能跳出藍色的「Windows 已保護您的電腦」：
+  點「其他資訊」→「仍要執行」即可。這是所有沒簽章的小工具都會遇到的正常情況
+
+可以直接複製給對方的說明：
+
+> 這是我用的截圖小工具 GrabScreen。點兩下安裝檔就能安裝，不用管理員權限。
+> 如果出現「Windows 已保護您的電腦」，按「其他資訊」→「仍要執行」。
+> 裝好後：Ctrl+Alt+1 全螢幕、Ctrl+Alt+2 視窗、Ctrl+Alt+3 框選，截完直接 Ctrl+V 貼上；
+> 跳出的小視窗按「開啟編輯」可以加框框、箭頭、文字、馬賽克。
+
+要發新版本：改 `src\AssemblyInfo.cs` 裡的版本號，再執行 `.\build.ps1`，`release\` 裡就會出現新版號的安裝檔。
+
 ## 自己重新編譯
 
 在這個資料夾用 PowerShell 執行：
@@ -96,7 +121,14 @@
 .\build.ps1
 ```
 
-會輸出 `dist\GrabScreen.exe`。原始碼在 `src\`，編輯器在 `src\Editor\`。
+會輸出 `dist\GrabScreen.exe` 和安裝檔 `release\GrabScreen-Setup-版本.exe`。原始碼在 `src\`，編輯器在 `src\Editor\`，安裝程式在 `installer\Setup.cs`。
+
+安裝程式的自動測試（在指定資料夾裡安裝、更新、移除一次，不會動到真的系統設定）：
+
+```powershell
+Start-Process .\release\GrabScreen-Setup-1.0.0.exe -ArgumentList '/selftest', "$env:TEMP\gs-setup-test" -Wait
+Get-Content "$env:TEMP\gs-setup-test\selftest.log"
+```
 
 | 檔案 | 內容 |
 |---|---|

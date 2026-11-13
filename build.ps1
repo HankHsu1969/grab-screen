@@ -27,3 +27,22 @@ $src = Get-ChildItem (Join-Path $root 'src') -Recurse -Filter *.cs | ForEach-Obj
     $src
 if ($LASTEXITCODE -ne 0) { throw '編譯失敗' }
 Write-Host "完成：$(Join-Path $out 'GrabScreen.exe')"
+
+# 3. 安裝檔：把剛編好的 GrabScreen.exe 包進 Setup，輸出到 release\GrabScreen-Setup-版本.exe
+$info = Get-Content (Join-Path $root 'src\AssemblyInfo.cs') -Raw -Encoding UTF8
+$m = [regex]::Match($info, 'AssemblyVersion\("(\d+)\.(\d+)\.(\d+)')
+if (-not $m.Success) { throw '找不到版本號（src\AssemblyInfo.cs）' }
+$ver = "$($m.Groups[1].Value).$($m.Groups[2].Value).$($m.Groups[3].Value)"
+$obj = Join-Path $root 'installer\obj'
+New-Item -ItemType Directory -Force $obj | Out-Null
+$verFile = Join-Path $obj 'Version.cs'
+Set-Content $verFile "[assembly: System.Reflection.AssemblyVersion(""$ver.0"")]`r`n[assembly: System.Reflection.AssemblyFileVersion(""$ver.0"")]" -Encoding UTF8
+$rel = Join-Path $root 'release'
+New-Item -ItemType Directory -Force $rel | Out-Null
+$setup = Join-Path $rel "GrabScreen-Setup-$ver.exe"
+& $csc /nologo /target:winexe /platform:anycpu /optimize+ /codepage:65001 /utf8output `
+    "/out:$setup" "/win32icon:$ico" "/resource:$(Join-Path $out 'GrabScreen.exe'),GrabScreen.exe" `
+    /r:System.dll /r:System.Core.dll /r:Microsoft.CSharp.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll `
+    (Join-Path $root 'installer\Setup.cs') (Join-Path $root 'src\Icons.cs') (Join-Path $root 'src\Native.cs') $verFile
+if ($LASTEXITCODE -ne 0) { throw '安裝檔編譯失敗' }
+Write-Host "完成：$setup"
