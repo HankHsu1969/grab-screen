@@ -1,0 +1,5 @@
+app.ico
+*.pdb
+dist/
+release/
+installer/obj/
