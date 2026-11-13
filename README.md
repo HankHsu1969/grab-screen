@@ -90,7 +90,14 @@
 
 ## 分享給其他人（安裝檔）
 
-把 `release\GrabScreen-Setup-1.0.0.exe`（約 150 KB）傳給對方就好，對方點兩下就能安裝：
+直接給對方下載頁連結：<https://github.com/HankHsu1969/grab-screen/releases/latest>
+
+或把檔案傳給對方，二選一：
+
+- `release\GrabScreen-Setup-1.0.0.exe`（約 150 KB）：點兩下就能安裝
+- `release\GrabScreen-Setup-1.0.0.zip`（約 70 KB）：**.exe 會被擋的時候用這個**，裡面是同一個安裝檔加上〈安裝說明.txt〉，對方要先「全部解壓縮」再執行
+
+安裝檔的特色：
 
 - **不用系統管理員權限**，只安裝給對方自己的帳號（裝在 `%LocalAppData%\Programs\GrabScreen`）
 - 會建立開始功能表捷徑，可選擇桌面捷徑、開機自動啟動、裝完立即執行
@@ -111,7 +118,13 @@
 > 裝好後：Ctrl+Alt+1 全螢幕、Ctrl+Alt+2 視窗、Ctrl+Alt+3 框選，截完直接 Ctrl+V 貼上；
 > 跳出的小視窗按「開啟編輯」可以加框框、箭頭、文字、馬賽克。
 
-要發新版本：改 `src\AssemblyInfo.cs` 裡的版本號，再執行 `.\build.ps1`，`release\` 裡就會出現新版號的安裝檔。
+要發新版本：改 `src\AssemblyInfo.cs` 裡的版本號，再執行 `.\build.ps1`，`release\` 裡就會出現新版號的安裝檔和 ZIP，然後：
+
+```powershell
+gh release create v1.1.0 release\GrabScreen-Setup-1.1.0.exe release\GrabScreen-Setup-1.1.0.zip --title "GrabScreen 1.1.0"
+```
+
+只想重做 ZIP（不重新編譯）：`.\build.ps1 -ZipOnly`。
 
 ## 自己重新編譯
 
