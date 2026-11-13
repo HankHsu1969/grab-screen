@@ -70,7 +70,16 @@ namespace GrabScreen
             y += rowH + Dpi.S(6);
 
             Controls.Add(Header("其他", pad, ref y));
-            chkStartup = AddCheck("開機時自動啟動 GrabScreen", Settings.StartWithWindows, pad, ref y);
+            if (Settings.IsPackaged)
+            {
+                // Store 版：開機啟動由 Windows 管理（安裝後預設開啟）
+                chkStartup = AddCheck("開機時自動啟動（Store 版請到 Windows「設定 → 應用程式 → 啟動」調整）", true, pad, ref y);
+                chkStartup.Enabled = false;
+            }
+            else
+            {
+                chkStartup = AddCheck("開機時自動啟動 GrabScreen", Settings.StartWithWindows, pad, ref y);
+            }
             y += Dpi.S(10);
 
             var ok = new Button { Text = "儲存", Size = new Size(Dpi.S(90), Dpi.S(32)), Location = new Point(W - pad - Dpi.S(188), y) };
@@ -123,7 +132,7 @@ namespace GrabScreen
             settings.AutoSave = chkAutoSave.Checked;
             settings.AutoSaveFolder = txtFolder.Text.Trim();
             settings.Save();
-            if (chkStartup.Checked != Settings.StartWithWindows) Settings.StartWithWindows = chkStartup.Checked;
+            if (!Settings.IsPackaged && chkStartup.Checked != Settings.StartWithWindows) Settings.StartWithWindows = chkStartup.Checked;
             DialogResult = DialogResult.OK;
             Close();
         }

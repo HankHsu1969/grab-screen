@@ -95,8 +95,8 @@
 
 或把檔案傳給對方，二選一：
 
-- `release\GrabScreen-Setup-1.0.0.exe`（約 150 KB）：點兩下就能安裝
-- `release\GrabScreen-Setup-1.0.0.zip`（約 70 KB）：**.exe 會被擋的時候用這個**，裡面是同一個安裝檔加上〈安裝說明.txt〉，對方要先「全部解壓縮」再執行
+- `GrabScreen-Setup-版本.exe`（約 150 KB）：點兩下就能安裝
+- `GrabScreen-Setup-版本.zip`（約 70 KB）：**.exe 會被擋的時候用這個**，裡面是同一個安裝檔加上〈安裝說明.txt〉，對方要先「全部解壓縮」再執行
 
 安裝檔的特色：
 
@@ -127,6 +127,17 @@ gh release create v1.1.0 release\GrabScreen-Setup-1.1.0.exe release\GrabScreen-S
 
 只想重做 ZIP（不重新編譯）：`.\build.ps1 -ZipOnly`。
 
+## 上架 Microsoft Store
+
+Store 版由微軟簽章，安裝時不會跳出任何警告。完整步驟（註冊開發者帳號、預留名稱、打包、送審）請看 [store/STORE-GUIDE.md](store/STORE-GUIDE.md)。
+
+- 打包：`.\build-store.ps1` → `store\out\GrabScreen_版本_x64.msix`（需要 `tools\sdk-buildtools`，說明見教學）
+- 套件身分：`store\identity.ini`（在 Partner Center 預留名稱後填入）
+- 商店頁文字與截圖：`store\listing-zh-TW.md`、`store\screenshots\`
+- 隱私權政策：[PRIVACY.md](PRIVACY.md)
+
+Store 版的開機啟動由 Windows 管理（「設定 → 應用程式 → 啟動」），程式會自動判斷自己是不是 Store 版。
+
 ## 自己重新編譯
 
 在這個資料夾用 PowerShell 執行：
@@ -140,7 +151,7 @@ gh release create v1.1.0 release\GrabScreen-Setup-1.1.0.exe release\GrabScreen-S
 安裝程式的自動測試（在指定資料夾裡安裝、更新、移除一次，不會動到真的系統設定）：
 
 ```powershell
-Start-Process .\release\GrabScreen-Setup-1.0.0.exe -ArgumentList '/selftest', "$env:TEMP\gs-setup-test" -Wait
+Start-Process (Get-ChildItem .\release\GrabScreen-Setup-*.exe | Sort-Object LastWriteTime | Select-Object -Last 1).FullName -ArgumentList '/selftest', "$env:TEMP\gs-setup-test" -Wait
 Get-Content "$env:TEMP\gs-setup-test\selftest.log"
 ```
 
@@ -156,3 +167,6 @@ Get-Content "$env:TEMP\gs-setup-test\selftest.log"
 | `src\Editor\EditorCanvas.cs` | 編輯器畫布：滑鼠操作、復原重做、縮放、裁切 |
 | `src\Editor\EditorForm.cs` | 編輯器視窗與工具列 |
 | `tools\SelfTest.cs` | 自動測試（不會動到真的滑鼠鍵盤） |
+| `tools\StoreShots.cs` | 產生 Store 商店頁截圖（`selftest.exe --store-shots 資料夾`） |
+| `tools\StoreAssets.cs` | 產生 Store 套件的各尺寸圖示 |
+| `build-store.ps1`、`store\` | Microsoft Store 打包腳本、資訊清單範本、商店頁資料 |

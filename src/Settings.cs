@@ -108,6 +108,29 @@ namespace GrabScreen
             return string.Join(" + ", parts.ToArray());
         }
 
+        private static int packaged = -1;
+
+        /// <summary>
+        /// 是不是從 Microsoft Store 安裝的版本（MSIX）。Store 版的開機啟動由 Windows 管理，
+        /// 寫登錄機碼沒有作用，要改到 Windows「設定 → 應用程式 → 啟動」開關。
+        /// </summary>
+        public static bool IsPackaged
+        {
+            get
+            {
+                if (packaged < 0)
+                {
+                    try
+                    {
+                        int len = 0;
+                        packaged = Native.GetCurrentPackageFullName(ref len, null) == Native.APPMODEL_ERROR_NO_PACKAGE ? 0 : 1;
+                    }
+                    catch { packaged = 0; } // 舊版 Windows 沒有這個 API，一定不是 Store 版
+                }
+                return packaged == 1;
+            }
+        }
+
         // ---- 開機自動啟動（寫在目前使用者的登錄機碼，不需要系統管理員權限）----
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string RunName = "GrabScreen";

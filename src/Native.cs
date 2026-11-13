@@ -34,6 +34,10 @@ namespace GrabScreen
         [DllImport("user32.dll")] public static extern uint GetDpiForSystem();
         [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
         [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr hIcon);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetCurrentPackageFullName(ref int length, StringBuilder name);
+        public const int APPMODEL_ERROR_NO_PACKAGE = 15700;
+
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, uint flags, uint timeoutMs, out IntPtr result);
 

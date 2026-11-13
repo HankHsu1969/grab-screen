@@ -3,3 +3,6 @@ app.ico
 dist/
 release/
 installer/obj/
+tools/sdk-buildtools/
+store/out/
+store/obj/

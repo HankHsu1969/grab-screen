@@ -13,7 +13,7 @@ namespace GrabScreen
     /// 自動測試：不動到真的滑鼠鍵盤，直接在程式內部模擬操作，把結果存成圖片檢查。
     /// 用法：selftest.exe 測試圖片.png 輸出資料夾
     /// </summary>
-    internal static class SelfTest
+    internal static partial class SelfTest
     {
         private static void Call(Control c, string method, EventArgs e)
         {
@@ -91,6 +91,7 @@ namespace GrabScreen
             Dpi.MakeProcessDpiAware();
             Application.EnableVisualStyles();
             if (args.Length > 0 && args[0] == "--probe") { ProbeAll(); return; }
+            if (args.Length > 1 && args[0] == "--store-shots") { StoreShots(args[1]); return; }
             string img = args[0], outDir = args[1];
             Directory.CreateDirectory(outDir);
             Bitmap src;

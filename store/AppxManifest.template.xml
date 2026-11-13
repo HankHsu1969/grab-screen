@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Microsoft Store（MSIX）套件的資訊清單範本。{大括號} 的值由 build-store.ps1 從 store\identity.ini 和 src\AssemblyInfo.cs 填入 -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop rescap">
+
+  <Identity Name="{IDENTITY_NAME}" Publisher="{PUBLISHER}" Version="{VERSION}" ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>GrabScreen 螢幕擷取</DisplayName>
+    <PublisherDisplayName>{PUBLISHER_DISPLAY_NAME}</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>按快捷鍵擷取螢幕到剪貼簿，並加上框框、箭頭、文字、編號、馬賽克等標示。</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="zh-TW" />
+  </Resources>
+
+  <Applications>
+    <Application Id="GrabScreen" Executable="GrabScreen.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="GrabScreen 螢幕擷取"
+        Description="按快捷鍵擷取螢幕到剪貼簿，並加上框框、箭頭、文字、編號、馬賽克等標示。"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <!-- 開機自動啟動：安裝並開啟過一次後生效，使用者可以在 Windows「設定 → 應用程式 → 啟動」關閉 -->
+        <desktop:Extension Category="windows.startupTask" Executable="GrabScreen.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="GrabScreenStartup" Enabled="true" DisplayName="GrabScreen 螢幕擷取" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>
