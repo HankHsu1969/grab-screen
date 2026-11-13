@@ -71,8 +71,9 @@ namespace GrabScreen
                 Native.GetClassName(w.Handle, sb, 128);
                 Console.WriteLine("視窗「" + w.Title + "」 class=" + sb + " " + w.Bounds + " ex=0x" + Native.GetWindowLong(w.Handle, Native.GWL_EXSTYLE).ToString("X"));
                 var b = w.Bounds;
-                foreach (var pt in new[] { new Point(b.X + b.Width / 2, b.Y + b.Height / 2), new Point(b.X + b.Width / 4, b.Y + b.Height / 3), new Point(b.X + b.Width - 60, b.Y + 15) })
+                foreach (var pt in new[] { new Point(b.X + b.Width / 2, b.Y + b.Height / 2), new Point(b.X + b.Width / 4, b.Y + b.Height / 3), new Point(b.X + b.Width - 60, b.Y + 15), new Point(b.X + b.Width * 2 / 3, b.Y + 12) })
                 {
+                    Console.WriteLine("  點 " + pt + " 標題列？" + (WindowFinder.IsOnTitleBar(w.Handle, pt, w.Bounds) ? "是" : "否"));
                     got = null;
                     var sw = System.Diagnostics.Stopwatch.StartNew();
                     probe.Request(++req, w.Handle, w.Bounds, pt);

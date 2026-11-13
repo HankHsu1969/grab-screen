@@ -28,6 +28,41 @@ namespace GrabScreen
         // 這些是「看不見但蓋在最上面」的視窗，要跳過
         private static readonly string[] IgnoredClasses = { "CEF-OSC-WIDGET", "WorkerW" };
 
+        /// <summary>
+        /// 滑鼠是不是在視窗的標題列上（含最小化、最大化、關閉按鈕）。
+        /// Chrome、新版檔案總管會把分頁畫在標題列那一排，所以只要同一橫排有地方是標題列，整排都算。
+        /// </summary>
+        public static bool IsOnTitleBar(IntPtr hwnd, Point screenPt, Rectangle window)
+        {
+            if (HitTestIsCaption(hwnd, screenPt)) return true;
+            if (screenPt.Y - window.Top > Dpi.S(100)) return false; // 只檢查視窗最上面那一段
+            for (int k = 1; k < 10; k++)
+            {
+                var p = new Point(window.Left + window.Width * k / 10, screenPt.Y);
+                if (HitTestIsCaption(hwnd, p)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 問視窗「這個點是你的哪個部位」。回答是標題列或標題列上的按鈕就回傳 true。
+        /// 有設逾時：遇到沒有回應的程式不會卡住。
+        /// </summary>
+        private static bool HitTestIsCaption(IntPtr hwnd, Point screenPt)
+        {
+            try
+            {
+                int lp = ((screenPt.Y & 0xFFFF) << 16) | (screenPt.X & 0xFFFF);
+                IntPtr res;
+                if (Native.SendMessageTimeout(hwnd, Native.WM_NCHITTEST, IntPtr.Zero, new IntPtr(lp),
+                        Native.SMTO_ABORTIFHUNG, 150, out res) == IntPtr.Zero) return false;
+                int code = (int)res.ToInt64();
+                return code == Native.HTCAPTION || code == Native.HTSYSMENU || code == Native.HTMINBUTTON ||
+                       code == Native.HTMAXBUTTON || code == Native.HTCLOSE || code == Native.HTHELP;
+            }
+            catch { return false; }
+        }
+
         /// <summary>列出目前畫面上看得到的視窗，順序是「最上層的在前面」。</summary>
         public static List<WindowInfo> GetTopLevelWindows()
         {
@@ -85,6 +120,7 @@ namespace GrabScreen
         private Rectangle pendingWindow;
         private Point pendingPoint;
         private int budget;
+        private bool hitTitleBar;   // UI 自動化回報滑鼠在「標題列」物件上
         private readonly Dictionary<string, List<AutomationElement>> childCache = new Dictionary<string, List<AutomationElement>>();
         private readonly Dictionary<string, string> labelCache = new Dictionary<string, string>();
 
@@ -137,11 +173,20 @@ namespace GrabScreen
                 List<ElementBox> chain = null;
                 try
                 {
-                    using (cr.Activate())
+                    if (WindowFinder.IsOnTitleBar(hwnd, pt, win))
                     {
-                        AutomationElement root = AutomationElement.FromHandle(hwnd);
-                        budget = 250; // 最多查詢幾次子物件，避免太複雜的程式卡太久
-                        chain = Descend(root, "hwnd:" + hwnd.ToInt64(), win, pt, 0);
+                        chain = new List<ElementBox>(); // 在標題列上：不找子物件，直接選整個視窗
+                    }
+                    else
+                    {
+                        using (cr.Activate())
+                        {
+                            AutomationElement root = AutomationElement.FromHandle(hwnd);
+                            budget = 250; // 最多查詢幾次子物件，避免太複雜的程式卡太久
+                            hitTitleBar = false;
+                            chain = Descend(root, "hwnd:" + hwnd.ToInt64(), win, pt, 0);
+                            if (hitTitleBar) chain = new List<ElementBox>();
+                        }
                     }
                 }
                 catch { chain = null; }
@@ -227,6 +272,15 @@ namespace GrabScreen
             foreach (var cand in cands)
             {
                 if (++tries > 4 || budget <= 0) break;
+                try
+                {
+                    if (cand.Element.Cached.ControlType == ControlType.TitleBar)
+                    {
+                        hitTitleBar = true; // 標題列 → 整個視窗
+                        return empty;
+                    }
+                }
+                catch { }
                 string ckey = KeyOf(cand.Element, key, cand.Rect);
                 var sub = Descend(cand.Element, ckey, cand.Rect, pt, depth + 1);
                 bool smaller = cand.Rect != rect;

@@ -6,5 +6,5 @@ using System.Reflection;
 [assembly: AssemblyCompany("星方向")]
 [assembly: AssemblyProduct("GrabScreen")]
 [assembly: AssemblyCopyright("© 2026 星方向")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]

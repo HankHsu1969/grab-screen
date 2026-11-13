@@ -34,6 +34,13 @@ namespace GrabScreen
         [DllImport("user32.dll")] public static extern uint GetDpiForSystem();
         [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
         [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr hIcon);
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, uint flags, uint timeoutMs, out IntPtr result);
+
+        public const uint WM_NCHITTEST = 0x0084;
+        public const uint SMTO_ABORTIFHUNG = 0x0002;
+        // WM_NCHITTEST 的回傳值：標題列、系統選單、最小化、最大化、關閉、說明按鈕
+        public const int HTCAPTION = 2, HTSYSMENU = 3, HTMINBUTTON = 8, HTMAXBUTTON = 9, HTCLOSE = 20, HTHELP = 21;
 
         public const int GWL_EXSTYLE = -20;
         public const int WS_EX_TOPMOST = 0x8;
